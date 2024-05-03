@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<h1 class="text-center">Posts</h1>
+<div id="posts">
+    {% for post in posts %}
+        <div class="card mb-4 border-dark">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <a href="/posts/{{ post.user.username }}" class="text-dark">
+                    <i class="fas fa-user"></i> {{ post.user.username }}
+                </a>
+                <div>
+                    <span class="badge bg-primary">{{ post.likes|length }} Likes</span>
+                    {% if user.id in post.likes|map(attribute='author')|list %}
+                    <a href="/like-post/{{ post.id }}" class="btn btn-link text-success">
+                        <i class="fas fa-thumbs-up"></i>
+                    </a>
+                    {% else %}
+                    <a href="/like-post/{{ post.id }}" class="btn btn-link text-muted">
+                        <i class="far fa-thumbs-up"></i>
+                    </a>
+                    {% endif %}
+                    
+                    {% if user.id == post.author %}
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown"></button>
+                        <ul class="dropdown-menu">
+                            <li><a href="/delete-post/{{ post.id }}" class="dropdown-item text-danger"><i class="fas fa-trash-alt"></i> Delete</a></li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ post.text }}</p>
+                <div class="collapse" id="comments-{{ post.id }}">
+                    <div class="card card-body">
+                        {% for comment in post.comments %}
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <a href="/posts/{{ comment.user.username }}" class="text-dark">
+                                    <i class="fas fa-user"></i> {{ comment.user.username }}
+                                </a>: {{ comment.text }}
+                            </div>
+                            <div>
+                                <small class="text-muted">{{ comment.data_created.strftime('%m/%d %H:%M') }}</small>
+                                {% if user.id == comment.author or user.id == post.author %}
+                                <a href="/delete-comment/{{ comment.id }}" class="btn btn-sm btn-outline-danger">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <a data-bs-toggle="collapse" href="#comments-{{ post.id }}" role="button" class="card-link">
+                    <small>View {{ post.comments|length }} Comments</small>
+                </a>
+                <form class="d-flex mt-3" method="POST" action="/create-comment/{{ post.id }}">
+                    <input type="text" name="text" class="form-control me-2" placeholder="Comment..." />
+                    <button type="submit" class="btn btn-primary">Comment</button>
+                </form>
+            </div>
+            <div class="card-footer text-muted">
+                {{ post.data_created.strftime('%m/%d %H:%M') }}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
+
